@@ -18,7 +18,10 @@ private:
 	Utilities^ utilityActual;
 	Graphics^ graphics;
 	bool currentlyMoving;
+	List<Point>^ pathToD ;
+	int stepIndex;
 
+	
 
 	
 
@@ -29,5 +32,7 @@ public:
 	void undo();
 	void draw();
 	void click(Point^ clickLocation);
+	List<int>^ getHighScore();
+	void wipeScore();
 
 };

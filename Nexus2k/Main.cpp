@@ -12,14 +12,57 @@ Main::Main(Graphics^ graphics)
 	this->graphics = graphics;
 	currentlyMoving = false;
 }
+// filling in the body for that method in that class.
+//wipes score upon game execution
+void Main::wipeScore()
+{
+utilityActual->wipeScore();
 
+}
+List<int>^ Main::getHighScore(){
+	return utilityActual->highScore();
+
+}
 	
 void Main::playTurn()
-{
+{// check if currently moving is true
+	if(currentlyMoving==true)
+	{
+	// Move one step along the path.
+		//increment a global integer to remember the number of steps along the path.
+		//utlity actual is an instance of utilities
+			utilityActual->stepAnimation(pathToD, stepIndex);
+			
+			stepIndex++;
+			//if the path is complete.
+			//Set currently moving to false.
+			//Calls the swap method 2 times,  for three cells hence the count-1.
+			if(stepIndex>=pathToD->Count-1)
+			{
+		//Check for rows of 5
+				score += utilityActual->detectFive();
+				currentlyMoving = false;
+				bool gameOver=board->addThree(random);
+				score += utilityActual->detectFive();
+				if(gameOver==true)
+					{
+						
+						utilityActual->highScoreList(score);
+
+					MessageBox::Show("Your Score is:  " + score.ToString(),"Message", MessageBoxButtons::OK);
+
+					
+				}
+		
+			}// Moving the pebble one step along the path.
+
+	}
 }
 void Main::undo()
 {
-	board->revertState();
+	// Getting the score back.
+	score=board->revertState();
+	
 }
 void Main:: draw()
 {
@@ -34,6 +77,9 @@ void Main:: draw()
 
 void Main:: click(Point^ clickLocation)
 {
+	// Disables interraction till game is out of the animation state.
+	if (currentlyMoving==false)
+	{
 	// Clicked location in the cell array
 	Point^ newClickedCellLocation= gcnew Point(clickLocation->X/CELLWIDTH, clickLocation->Y/CELLWIDTH);
 	//if we havnt picked it a cell its empty.
@@ -53,25 +99,26 @@ void Main:: click(Point^ clickLocation)
 		else if (board->getBoardCell(newClickedCellLocation)->GetColour()==CellColour::free)
 		{
 			//Move cell to new location.
-			List<Point>^ pathToD = utilityActual->findMovementPath(newClickedCellLocation);
+			//This is saving it to the global variable rather then locally.
+			 pathToD = utilityActual->findMovementPath(newClickedCellLocation);
+			// there is not a path.
 			if(pathToD->Count > 0)
 			{
+				
 				SystemSounds::Asterisk->Play();
-				board->saveCurrentBoardState();
+				board->saveCurrentBoardState(score);
 				currentlyMoving = true;
+				//Find a path, remember it and set the currentlyMoving to true.
 				utilityActual->pickedCell = nullptr;
-				utilityActual->moveToPosition(pathToD);
-
-				//Check for rows of 5
-				score += utilityActual->detectFive();
-				currentlyMoving = false;
-				board->addThree(random);
+				stepIndex=0;
+				
 			}
 		}
 		else 
 		{
 			utilityActual->pickedCell=newClickedCellLocation;
 		}	
+	}
 	}
 }
 

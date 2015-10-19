@@ -27,6 +27,7 @@ int Utilities:: detectFive()
 		}
 
 	}
+	//Checks rows and collumns for repeating cells.
 	for(int row = 0; row < 9; row++)
 	{
 		for(int collum = 0; collum < 9; collum++)
@@ -34,6 +35,7 @@ int Utilities:: detectFive()
 			if(gameBoard->getBoardCell(row,collum)->matched == true)
 			{
 				gameBoard->getBoardCell(row,collum)->changeCellColour(CellColour::free);
+				//Once line is matched set this to an empty cell.
 				gameBoard->getBoardCell(row,collum)->matched = false;
 			}
 		}
@@ -149,16 +151,16 @@ List<Point>^ Utilities::findMovementPath(Point^ endPoint)
 }
 
 //Takes one point and moves picked cell to that location given the room.
-void Utilities:: moveToPosition(List<Point>^ movementPath)
+void Utilities::stepAnimation(List<Point>^ movementPath, int stepIndex)
 {
-	int count = movementPath->Count;
-	for(int i = 1; i < movementPath->Count; i++)
-	{
-		Point^ firstPoint = gcnew Point(movementPath[i-1].X,movementPath[i-1].Y);
-		Point^ secondPoint = gcnew Point(movementPath[i].X,movementPath[i].Y);
-		swapCell(firstPoint, secondPoint);
-	}
- 
+	//swaps current cell contents with cell contents in the path.
+	Point^ firstPoint = gcnew Point(movementPath[stepIndex].X,movementPath[stepIndex].Y);
+	// When the animation state, call the play game method, its going to talk to the step animation method and its telling its path to walk along
+	//and its also giving it the index of how far along the path it is.
+	//Using this list of points in the grid from movementpath and gets the next coordinate along in the path which correstponds to the adjacent cell
+	//then it swap their contents..
+	Point^ secondPoint = gcnew Point(movementPath[stepIndex+1].X,movementPath[stepIndex+1].Y);
+	swapCell(firstPoint, secondPoint);
 }
 // Swapping cells with another to get the picked pebble to move.
 void Utilities:: swapCell(Point^ cell1, Point^cell2)
@@ -260,7 +262,7 @@ int Utilities::checkVertical (Point^ startPoint)
 			// If no match has been found, terminate at this statement.
 			repeatFound=false;
 		}
-		
+
 	}
 	while(repeatFound);	
 	if(cellCount < 5)
@@ -380,9 +382,85 @@ int Utilities::checkDiagnalLeft (Point^ startPoint)
 		{
 			item->matched = true;
 		}
-		
+
 		return cellCount*10; // return when 5 or more cells found
 	}
 }
+List<int>^ Utilities::highScore()
+{
+	//MessageBox::Show("Game Over","Message", MessageBoxButtons::OK);
+	StreamReader^ sr = gcnew StreamReader( "highScore.txt" );
+	List<int>^ highScore=gcnew List<int>();
+	String^ line;
 
+	// Read and display lines from the file until the end of 
+	// the file is reached.
+	while ( line = sr->ReadLine() )
+	{
+
+		highScore->Add(Int32::Parse(line));
+
+	}
+
+	sr->Close();
+	// return it as a list of strings
+	return highScore;;
+
+
+
+}
+void Utilities:: highScoreList(int score)
+{
+	//this searches through all the high scores, and orders current high score into list.
+	List<int>^ highScore=this->highScore();
+	bool placementScore= false;
+	int count=0;
+	while(count<highScore->Count && placementScore==false)
+	{// checks to see where the score goes in a list of high scores.
+		//if my current score is higher then high score then put it infront of the  high score.
+		if(score>=highScore[count])
+		{ //insert score in to the list of high scores.
+			highScore->Insert(count, score);
+			//The score has been places. Stopit.
+			placementScore=true;
+
+		}
+
+
+		count++;
+
+	}
+	if (placementScore==false)
+	{
+		//if my current score is the smallest  in the list of high scores then put it at the end of the list of high scores.
+		highScore->Add(score);
+
+	}
+	StreamWriter^ sr = gcnew StreamWriter( "highScore.txt" );
+	//Loops though each item of list of high scores memory list and write it into the file.
+	//^ accesses each element in the high score list and writes, String ^ because it was a list of String pointers.
+	for each( int writeScore in highScore)
+	{
+		sr->WriteLine(writeScore.ToString());
+	}
+
+	sr->Flush();
+
+	sr->Close();
+
+
+
+
+
+
+}
+//Essentially wipes file  on execution.
+void Utilities::wipeScore()
+{
+	StreamWriter^ sr = gcnew StreamWriter( "highScore.txt" );
+	//Loops though each item of list of high scores memory list and write it into the file.
+	//^ accesses each element in the high score list and writes, String ^ because it was a list of String pointers
+	sr->Close();
+
+}
 

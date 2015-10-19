@@ -9,10 +9,10 @@ using namespace System::Drawing;
 ref class Cell
 {
 	private:
-	CellColour colour;
 	Graphics^ graphics;
 public:
 	property bool matched;
+	property CellColour colour;
 	
 
 public:
